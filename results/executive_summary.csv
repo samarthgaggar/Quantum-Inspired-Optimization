@@ -1,0 +1,6 @@
+,value
+main_lower_bound,20.0
+classical_makespan,20.0
+annealing_makespan,20.0
+benchmark_feasible_run_rate,1.0
+qaoa_micro_feasible_run_rate,1.0

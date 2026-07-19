@@ -1,0 +1,13 @@
+config,seed,feasible,makespan,runtime,feasible_read_rate,num_reads,num_sweeps,schedule_type,beta_range
+quick,101,True,24,0.03964154201094061,0.06,50,500,geometric,automatic
+quick,202,True,22,0.03955449999193661,0.08,50,500,geometric,automatic
+quick,303,True,23,0.03953833400737494,0.12,50,500,geometric,automatic
+more_reads,101,True,23,0.15114166599232703,0.07,200,500,geometric,automatic
+more_reads,202,True,22,0.15600829100003466,0.09,200,500,geometric,automatic
+more_reads,303,True,23,0.15167654200922698,0.1,200,500,geometric,automatic
+more_sweeps,101,True,23,0.1492538330203388,0.26,50,2000,geometric,automatic
+more_sweeps,202,True,23,0.1497258749732282,0.2,50,2000,geometric,automatic
+more_sweeps,303,True,20,0.15052183397347108,0.24,50,2000,geometric,automatic
+linear_wide,101,True,21,0.13241812502383254,0.235,200,2000,linear,"(0.00016702341700239646, 1.1804414253164597)"
+linear_wide,202,True,21,0.1327663330012001,0.255,200,2000,linear,"(0.00016702341700239646, 1.1804414253164597)"
+linear_wide,303,True,22,0.13244583399500698,0.175,200,2000,linear,"(0.00016702341700239646, 1.1804414253164597)"

@@ -1,0 +1,3 @@
+method,makespan,runtime_s,feasible,lower_bound
+CPM-priority list scheduling,20,0.00020312500419095159,True,20
+Simulated annealing,20,0.13288733302033506,True,20
