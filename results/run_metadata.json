@@ -1,0 +1,15 @@
+{
+  "python": "3.13.7",
+  "packages": {
+    "dimod": "0.12.22",
+    "dwave-samplers": "1.8.0",
+    "networkx": "3.6.1",
+    "numpy": "2.5.1",
+    "matplotlib": "3.11.1",
+    "pandas": "2.3.3",
+    "qiskit": "2.5.0",
+    "qiskit-optimization": "0.7.0"
+  },
+  "benchmark_seed": 20260719,
+  "qaoa_qubit_cap": 18
+}

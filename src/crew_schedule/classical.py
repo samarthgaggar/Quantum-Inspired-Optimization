@@ -34,9 +34,7 @@ def cpm_analysis(instance: ProjectInstance) -> dict[str, object]:
         )
         latest_start[task_id] = latest_finish[task_id] - durations[task_id]
 
-    total_float = {
-        task_id: latest_start[task_id] - earliest_start[task_id] for task_id in order
-    }
+    total_float = {task_id: latest_start[task_id] - earliest_start[task_id] for task_id in order}
     critical_tasks = [task_id for task_id in order if total_float[task_id] == 0]
     resource_bound = ceil(sum(durations.values()) / instance.crew_limit)
     return {
@@ -110,4 +108,3 @@ def solve_cpm_list(instance: ProjectInstance) -> SolverResult:
         runtime=perf_counter() - started_at,
         metadata={"validation_errors": errors, "priorities": priorities, **cpm},
     )
-

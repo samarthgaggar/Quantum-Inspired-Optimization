@@ -1,8 +1,8 @@
+import json
 from pathlib import Path
 
 import nbformat
 import pandas as pd
-
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -33,6 +33,10 @@ def test_generated_results_cover_the_acceptance_matrix():
     assert "not run—qubit limit" in set(qaoa["status"])
     assert summary["classical_makespan"] == 20
     assert summary["annealing_makespan"] == 20
+    metadata = json.loads((ROOT / "results" / "run_metadata.json").read_text())
+    assert metadata["benchmark_seed"] == 20_260_719
+    assert metadata["qaoa_qubit_cap"] == 18
+    assert {"dimod", "dwave-samplers", "qiskit"} <= set(metadata["packages"])
 
 
 def test_expected_figures_exist_and_are_nonempty():
@@ -48,4 +52,3 @@ def test_expected_figures_exist_and_are_nonempty():
     for name in expected:
         path = ROOT / "figures" / name
         assert path.exists() and path.stat().st_size > 1_000
-

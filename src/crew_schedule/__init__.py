@@ -6,7 +6,7 @@ from .examples import construction_project, micro_projects, toy_project
 from .experiments import generate_random_project, run_benchmarks
 from .models import ProjectInstance, Schedule, SolverResult, Task, validate_schedule
 from .qaoa import bqm_to_quadratic_program, solve_qaoa
-from .qubo import QuboEncoding, build_qubo, decode_sample, encode_schedule
+from .qubo import QuboEncoding, analyze_sample, build_qubo, decode_sample, encode_schedule
 
 __all__ = [
     "Task",
@@ -18,6 +18,7 @@ __all__ = [
     "cpm_analysis",
     "solve_cpm_list",
     "build_qubo",
+    "analyze_sample",
     "decode_sample",
     "encode_schedule",
     "solve_annealing",
@@ -30,4 +31,3 @@ __all__ = [
     "generate_random_project",
     "run_benchmarks",
 ]
-

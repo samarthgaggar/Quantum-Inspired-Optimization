@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from time import perf_counter
-from typing import Sequence
 
 import numpy as np
 
@@ -16,7 +16,9 @@ _EXACT_ENERGY_CACHE: dict[tuple, float] = {}
 def _bqm_fingerprint(bqm) -> tuple:
     linear = tuple(sorted((str(variable), float(bias)) for variable, bias in bqm.linear.items()))
     quadratic = tuple(
-        sorted((str(left), str(right), float(bias)) for (left, right), bias in bqm.quadratic.items())
+        sorted(
+            (str(left), str(right), float(bias)) for (left, right), bias in bqm.quadratic.items()
+        )
     )
     return float(bqm.offset), linear, quadratic
 

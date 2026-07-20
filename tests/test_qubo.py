@@ -3,7 +3,7 @@ import itertools
 import dimod
 import numpy as np
 
-from crew_schedule import build_qubo, decode_sample, encode_schedule, toy_project
+from crew_schedule import analyze_sample, build_qubo, decode_sample, encode_schedule, toy_project
 from crew_schedule.classical import solve_cpm_list
 from crew_schedule.examples import micro_projects
 from crew_schedule.qaoa import bqm_to_quadratic_program
@@ -20,6 +20,15 @@ def test_domains_and_known_schedule_have_expected_energy():
     decoded, errors = decode_sample(sample, encoding)
     assert errors == []
     assert decoded == schedule
+    assert analyze_sample(sample, encoding)["decision_feasible"]
+
+
+def test_sample_analysis_explains_an_empty_assignment():
+    bqm, encoding = build_qubo(toy_project())
+    report = analyze_sample({variable: 0 for variable in bqm.variables}, encoding)
+    assert not report["decision_feasible"]
+    assert set(report["one_hot_deviation"]) == set(encoding.domains)
+    assert report["finish_objective"] == 0
 
 
 def test_exact_toy_ground_state_is_feasible_and_makespan_four():

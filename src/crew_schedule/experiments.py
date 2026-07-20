@@ -69,9 +69,7 @@ def run_benchmarks(
         for crew_limit in crew_limits:
             for instance_index in range(instances_per_cell):
                 instance_seed = base_seed + 1_000 * cell_index + instance_index
-                instance = generate_random_project(
-                    task_count, crew_limit, seed=instance_seed
-                )
+                instance = generate_random_project(task_count, crew_limit, seed=instance_seed)
                 classical = solve_cpm_list(instance)
                 cpm = cpm_analysis(instance)
                 bqm, _ = build_qubo(instance)
@@ -105,9 +103,7 @@ def run_benchmarks(
                                 else np.nan
                             ),
                             "improvement_vs_classical": (
-                                classical_makespan - makespan
-                                if annealed.feasible
-                                else np.nan
+                                classical_makespan - makespan if annealed.feasible else np.nan
                             ),
                             "bqm_variables": bqm.num_variables,
                             "bqm_interactions": bqm.num_interactions,
@@ -121,9 +117,7 @@ def consistency_summary(benchmark: pd.DataFrame) -> pd.DataFrame:
     """Aggregate repeated annealing runs into per-instance consistency data."""
 
     return (
-        benchmark.groupby(
-            ["instance", "task_count", "crew_limit"], as_index=False
-        )
+        benchmark.groupby(["instance", "task_count", "crew_limit"], as_index=False)
         .agg(
             feasible_run_rate=("annealing_feasible", "mean"),
             median_makespan=("annealing_makespan", "median"),
@@ -133,4 +127,3 @@ def consistency_summary(benchmark: pd.DataFrame) -> pd.DataFrame:
         )
         .fillna({"makespan_std": 0.0})
     )
-

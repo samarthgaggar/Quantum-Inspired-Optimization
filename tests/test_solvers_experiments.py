@@ -1,6 +1,6 @@
 import pandas as pd
 
-from crew_schedule import solve_annealing
+from crew_schedule import solve_annealing, tune_annealing
 from crew_schedule.examples import micro_projects, toy_project
 from crew_schedule.experiments import generate_random_project, run_benchmarks
 from crew_schedule.models import validate_schedule
@@ -40,3 +40,16 @@ def test_qaoa_cap_reports_skip_without_running_quantum_code():
     assert not result.feasible
     assert result.metadata["status"] == "not run—qubit limit"
 
+
+def test_compact_tuning_returns_all_four_configurations():
+    selected, frame = tune_annealing(toy_project(), seeds=(41,))
+    assert selected.name in set(frame["config"])
+    assert set(frame["config"]) == {"quick", "more_reads", "more_sweeps", "linear_wide"}
+    assert len(frame) == 4
+
+
+def test_qaoa_executes_on_the_smallest_shared_qubo():
+    result = solve_qaoa(micro_projects()[0], reps=1, seed=11, shots=128, maxiter=5, qubit_cap=18)
+    assert result.metadata["status"] in {"completed", "no feasible measured sample"}
+    assert result.metadata["exact_ground_energy"] == 2
+    assert result.metadata["qubits"] == 8

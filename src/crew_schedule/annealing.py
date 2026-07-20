@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from statistics import median
 from time import perf_counter
-from typing import Iterable, Sequence
 
 import pandas as pd
 from dwave.samplers import SimulatedAnnealingSampler
@@ -173,4 +173,3 @@ def tune_annealing(
         ranking.append(((-success_rate, median_makespan, median_runtime), config))
     ranking.sort(key=lambda item: item[0])
     return ranking[0][1], frame
-

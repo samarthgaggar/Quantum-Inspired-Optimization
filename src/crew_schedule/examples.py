@@ -75,4 +75,3 @@ def micro_projects() -> tuple[ProjectInstance, ...]:
         name="micro_3",
     )
     return two, three, toy_project()
-

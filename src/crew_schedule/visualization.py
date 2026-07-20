@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -127,7 +127,9 @@ def plot_scaling(benchmark: pd.DataFrame):
     classical = benchmark.groupby(["task_count", "crew_limit"])["classical_makespan"].median()
     for crew_limit in sorted(benchmark["crew_limit"].unique()):
         values = classical.xs(crew_limit, level="crew_limit")
-        axes[0].plot(values.index, values.values, linestyle="--", label=f"Classical, {crew_limit} crews")
+        axes[0].plot(
+            values.index, values.values, linestyle="--", label=f"Classical, {crew_limit} crews"
+        )
 
     runtime = benchmark.groupby("task_count").agg(
         annealing=("annealing_runtime", "median"),
@@ -187,4 +189,3 @@ def plot_qaoa_scaling(qaoa_results: pd.DataFrame):
 
 def save_figure(fig, path) -> None:
     fig.savefig(path, dpi=160, bbox_inches="tight")
-

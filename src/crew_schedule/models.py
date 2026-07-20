@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from math import ceil
-from typing import Any, Mapping
+from typing import Any
 
 import networkx as nx
 
@@ -22,7 +23,11 @@ class Task:
             raise ValueError("task id must be a non-empty string")
         if not isinstance(self.name, str) or not self.name.strip():
             raise ValueError(f"task {self.id!r} must have a non-empty name")
-        if isinstance(self.duration, bool) or not isinstance(self.duration, int) or self.duration <= 0:
+        if (
+            isinstance(self.duration, bool)
+            or not isinstance(self.duration, int)
+            or self.duration <= 0
+        ):
             raise ValueError(f"task {self.id!r} duration must be a positive integer")
 
 
@@ -41,7 +46,11 @@ class ProjectInstance:
         object.__setattr__(self, "precedence", tuple(tuple(edge) for edge in self.precedence))
         if not self.tasks:
             raise ValueError("a project must contain at least one task")
-        if isinstance(self.crew_limit, bool) or not isinstance(self.crew_limit, int) or self.crew_limit <= 0:
+        if (
+            isinstance(self.crew_limit, bool)
+            or not isinstance(self.crew_limit, int)
+            or self.crew_limit <= 0
+        ):
             raise ValueError("crew_limit must be a positive integer")
 
         ids = [task.id for task in self.tasks]
@@ -151,9 +160,7 @@ def validate_schedule(instance: ProjectInstance, schedule: Schedule) -> tuple[bo
         if schedule.start_times[successor] < pred_finish:
             errors.append(f"precedence violated: {predecessor} -> {successor}")
 
-    actual_makespan = max(
-        schedule.start_times[task.id] + task.duration for task in instance.tasks
-    )
+    actual_makespan = max(schedule.start_times[task.id] + task.duration for task in instance.tasks)
     if schedule.makespan != actual_makespan:
         errors.append(
             f"makespan is {schedule.makespan}, but task completion implies {actual_makespan}"
@@ -165,8 +172,7 @@ def validate_schedule(instance: ProjectInstance, schedule: Schedule) -> tuple[bo
         active = [
             task.id
             for task in instance.tasks
-            if schedule.start_times[task.id] <= time
-            < schedule.start_times[task.id] + task.duration
+            if schedule.start_times[task.id] <= time < schedule.start_times[task.id] + task.duration
         ]
         if len(active) > instance.crew_limit:
             errors.append(
@@ -174,4 +180,3 @@ def validate_schedule(instance: ProjectInstance, schedule: Schedule) -> tuple[bo
             )
 
     return not errors, errors
-

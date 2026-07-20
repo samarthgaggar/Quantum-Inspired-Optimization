@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from itertools import product
-from typing import Mapping
 
 import dimod
 import networkx as nx
@@ -37,7 +37,9 @@ def _variable_name(index: int, task_id: str, time: int) -> str:
     return f"x_{index:04d}_{safe}_{time}"
 
 
-def _time_domains(instance: ProjectInstance) -> tuple[dict[str, tuple[int, ...]], list[tuple[str, str]]]:
+def _time_domains(
+    instance: ProjectInstance,
+) -> tuple[dict[str, tuple[int, ...]], list[tuple[str, str]]]:
     graph = instance.graph
     durations = {task.id: task.duration for task in instance.tasks}
     leaves = [node for node in graph if graph.out_degree(node) == 0]
@@ -59,10 +61,7 @@ def _time_domains(instance: ProjectInstance) -> tuple[dict[str, tuple[int, ...]]
             latest[successor] - durations[node] for successor in extended.successors(node)
         )
 
-    domains = {
-        node: tuple(range(earliest[node], latest[node] + 1))
-        for node in order
-    }
+    domains = {node: tuple(range(earliest[node], latest[node] + 1)) for node in order}
     if any(not domain for domain in domains.values()):
         raise ValueError("horizon leaves at least one task with no valid start-time domain")
     return domains, list(extended.edges())
@@ -169,7 +168,6 @@ def decode_sample(
         return None, errors
 
     finish_time = selected.pop(encoding.finish_id)
-    task_map = encoding.instance.task_map
     actual_makespan = max(selected[task.id] + task.duration for task in encoding.instance.tasks)
     if finish_time < actual_makespan:
         errors.append(
@@ -181,6 +179,68 @@ def decode_sample(
     if not feasible:
         return None, validation_errors
     return schedule, []
+
+
+def analyze_sample(sample: Mapping[str, int | float], encoding: QuboEncoding) -> dict[str, object]:
+    """Explain decision-level violations in a BQM sample.
+
+    Slack-bit consistency remains represented by the BQM energy itself. This
+    report focuses on the scheduling decisions a reader can interpret directly.
+    """
+
+    selected = {
+        task_id: [
+            time
+            for time in domain
+            if float(sample.get(encoding.start_variables[(task_id, time)], 0)) > 0.5
+        ]
+        for task_id, domain in encoding.domains.items()
+    }
+    one_hot_deviation = {
+        task_id: abs(len(times) - 1) for task_id, times in selected.items() if len(times) != 1
+    }
+
+    durations = {task.id: task.duration for task in encoding.instance.tasks}
+    precedence_violations: list[tuple[str, str, int, int]] = []
+    for predecessor, successor in encoding.instance.precedence:
+        for pred_start, succ_start in product(selected[predecessor], selected[successor]):
+            if succ_start < pred_start + durations[predecessor]:
+                precedence_violations.append((predecessor, successor, pred_start, succ_start))
+
+    crew_usage: dict[int, int] = {}
+    crew_overload: dict[int, int] = {}
+    for time in range(encoding.horizon):
+        usage = sum(
+            start <= time < start + durations[task.id]
+            for task in encoding.instance.tasks
+            for start in selected[task.id]
+        )
+        crew_usage[time] = usage
+        if usage > encoding.instance.crew_limit:
+            crew_overload[time] = usage - encoding.instance.crew_limit
+
+    finish_times = selected[encoding.finish_id]
+    terminal_violations: list[tuple[str, int, int]] = []
+    if len(finish_times) == 1:
+        finish_time = finish_times[0]
+        graph = encoding.instance.graph
+        for terminal in (node for node in graph if graph.out_degree(node) == 0):
+            for start in selected[terminal]:
+                if finish_time < start + durations[terminal]:
+                    terminal_violations.append((terminal, start, finish_time))
+
+    return {
+        "selected_starts": selected,
+        "one_hot_deviation": one_hot_deviation,
+        "precedence_violations": precedence_violations,
+        "terminal_violations": terminal_violations,
+        "crew_usage": crew_usage,
+        "crew_overload": crew_overload,
+        "finish_objective": sum(finish_times),
+        "decision_feasible": not (
+            one_hot_deviation or precedence_violations or terminal_violations or crew_overload
+        ),
+    }
 
 
 def _subset_bits(weighted_variables: tuple[tuple[str, int], ...], target: int) -> dict[str, int]:
@@ -211,10 +271,10 @@ def encode_schedule(schedule: Schedule, encoding: QuboEncoding) -> dict[str, int
     task_map = encoding.instance.task_map
     for time, slack_terms in encoding.resource_slacks.items():
         active = sum(
-            schedule.start_times[task_id] <= time
+            schedule.start_times[task_id]
+            <= time
             < schedule.start_times[task_id] + task_map[task_id].duration
             for task_id in schedule.start_times
         )
         sample.update(_subset_bits(slack_terms, encoding.instance.crew_limit - active))
     return sample
-
